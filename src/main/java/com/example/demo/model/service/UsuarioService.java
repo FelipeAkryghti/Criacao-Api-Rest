@@ -1,52 +1,49 @@
 package com.example.demo.model.service;
 
-import com.example.demo.model.Usuario;
 import org.springframework.stereotype.Service;
+
+import com.example.demo.model.entity.Usuario;
+import com.example.demo.model.entity.repository.UsuarioRepository;
+
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class UsuarioService {
 
-    private List<Usuario> usuarios = new ArrayList<>();
-    private int id = 0;
+    private final UsuarioRepository usuarioRepository;
 
-    public Usuario criarUsuario(Usuario usuario) {
-        System.out.println("Recebendo usuário: " + usuario);
-        usuario.setId(++id);
-        usuarios.add(usuario);
-        return usuario;
+    public UsuarioService(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
+    }
+
+    public Usuario novoUsuario(Usuario usuario) {
+        return usuarioRepository.save(usuario);
     }
 
     public List<Usuario> listarUsuarios() {
+        Iterable<Usuario> iterable = usuarioRepository.findAll();
+        List<Usuario> usuarios = new ArrayList<>();
+        for (Usuario u : iterable) {
+            usuarios.add(u);
+        }
         return usuarios;
     }
 
-    public boolean atualizarUsuario(Usuario usuario) throws Exception {
-
-        boolean atualizado = false;
-        for (Usuario u : usuarios) {
-            if (u.getId() == usuario.getId()) {
-                u.setNome(usuario.getNome());
-                u.setEmail(usuario.getEmail());
-                return true;
-            }
+    public boolean atualizarUsuario(Usuario usuario) {
+        if (!usuarioRepository.existsById(usuario.getId())) {
+            return false;
         }
-         if(!atualizado){
-            throw new Exception("Usuário com id: " + id + " não encontrado");
-         }
-
-         return atualizado;
+        usuarioRepository.save(usuario);
+        return true;
     }
 
-    public boolean deletarUsuario(int id) throws Exception {
-        boolean deletou = usuarios.removeIf(u -> u.getId() == id);
-
-        if(deletou) {
-            return true;
-        } else {
-            throw new Exception("Usuário com id: " + id + " não encontrado");
+    public boolean deletarUsuario(long id) {
+        if (!usuarioRepository.existsById(id)) {
+            return false;
         }
+        usuarioRepository.deleteById(id);
+        return true;
     }
 
-} 
+}

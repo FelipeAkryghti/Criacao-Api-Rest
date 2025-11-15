@@ -1,6 +1,6 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.Produto;
+import com.example.demo.model.entity.Produto;
 import com.example.demo.model.service.ProdutoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,37 +11,40 @@ import java.util.List;
 @RequestMapping("/produtos")
 public class ProdutoController {
 
-    @Autowired
-    private ProdutoService produtoService;
+    private final ProdutoService produtoService;
 
-    @PostMapping("/novo")
-    public ResponseEntity<Produto> criarProduto(@RequestBody Produto produto) {
-        Produto novo = produtoService.criarProduto(produto);
-        return ResponseEntity.status(201).body(novo);
+    @Autowired
+    public ProdutoController(ProdutoService produtoService) {
+        this.produtoService = produtoService;
     }
 
     @GetMapping
     public ResponseEntity<List<Produto>> listarProdutos() {
-        return ResponseEntity.ok(produtoService.listarProdutos());
+        List<Produto> produtos = produtoService.listarProdutos();
+        return ResponseEntity.ok(produtos);
+    }
+
+    @PostMapping("/novo")
+    public ResponseEntity<Produto> criarProduto(@RequestBody Produto produto) {
+        Produto salvo = produtoService.novoProduto(produto);
+        return ResponseEntity.status(201).body(salvo);
     }
 
     @PutMapping("/atualizar")
     public ResponseEntity<?> atualizarProduto(@RequestBody Produto produto) {
-        try {
-            produtoService.atualizarProduto(produto);
+        boolean atualizado = produtoService.atualizarProduto(produto);
+        if (atualizado) {
             return ResponseEntity.ok(true);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Ocorreu um erro: " + e.getMessage());
         }
+        return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/deletar/{id}")
-    public ResponseEntity<?> deletarProduto(@PathVariable int id) {
-        try {
-            produtoService.deletarProduto(id);
+    public ResponseEntity<?> deletarProduto(@PathVariable long id) {
+        boolean deletado = produtoService.deletarProduto(id);
+        if (deletado) {
             return ResponseEntity.ok(true);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Ocorreu um erro: " + e.getMessage());
         }
+        return ResponseEntity.notFound().build();
     }
 }

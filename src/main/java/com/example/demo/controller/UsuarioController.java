@@ -1,6 +1,6 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.Usuario;
+import com.example.demo.model.entity.Usuario;
 import com.example.demo.model.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,36 +18,34 @@ public class UsuarioController {
         this.usuarioService = usuarioService;
     }
 
-    @PostMapping("/novo")
-    public ResponseEntity<Usuario> criarUsuario(@RequestBody Usuario usuario) {
-        Usuario novoUsuario = usuarioService.criarUsuario(usuario);
-        return ResponseEntity.status(201).body(novoUsuario);
-    }
-
     @GetMapping
     public ResponseEntity<List<Usuario>> listarUsuarios() {
         List<Usuario> usuarios = usuarioService.listarUsuarios();
         return ResponseEntity.ok(usuarios);
     }
 
+    @PostMapping("/novo")
+    public ResponseEntity<Usuario> criarUsuario(@RequestBody Usuario usuario) {
+        Usuario salvo = usuarioService.novoUsuario(usuario);
+        return ResponseEntity.status(201).body(salvo);
+    }
+
     @PutMapping("/atualizar")
     public ResponseEntity<?> atualizarUsuario(@RequestBody Usuario usuario) {
-        try {
-            usuarioService.atualizarUsuario(usuario);
+        boolean atualizado = usuarioService.atualizarUsuario(usuario);
+        if (atualizado) {
             return ResponseEntity.ok(true);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Ocorreu um erro: " + e.getMessage());
         }
+        return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/deletar/{id}")
-    public ResponseEntity<?> deletarUsuario(@PathVariable int id) {
-        try {
-            usuarioService.deletarUsuario(id);
+    public ResponseEntity<?> deletarUsuario(@PathVariable long id) {
+        boolean deletado = usuarioService.deletarUsuario(id);
+        if (deletado) {
             return ResponseEntity.ok(true);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Ocorreu um erro: " + e.getMessage());
         }
+        return ResponseEntity.notFound().build();
     }
 
 }
